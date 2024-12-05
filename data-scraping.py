@@ -1,65 +1,95 @@
-import requests
+import csv
+import pandas as pd
 from bs4 import BeautifulSoup
+import requests
 
-# URL cible
-url = "https://expressshop.tn/reviews/"
+print ("testtttttt")
 
-# Envoyer une requête pour récupérer le contenu HTML
-headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
-response = requests.get(url, headers=headers)
+base_url = "https://cdn.judge.me/reviews/all_reviews_js_based"
+params = {
+    "url": "expressshop.tn",
+    "shop_domain": "expressshop.tn",
+    "platform": "woocommerce",
+    "sort_by": "created_at",
+    "sort_dir": "desc",
+    "page": 1,
+    "review_type": "product-reviews"
+}
 
-# Vérifier si la requête est réussie
-if response.status_code == 200:
-    print("Connexion réussie au site !")
-else:
-    print(f"Échec de la connexion. Code d'état : {response.status_code}")
-    exit()
+total_reviews = []
 
-# Analyser le contenu HTML
-soup = BeautifulSoup(response.content, 'html.parser')
+while True:
+    response = requests.get(base_url, params=params)
+    if response.status_code != 200:
+        print(f"Failed to fetch reviews: HTTP {response.status_code}")
+        break
 
-# Trouver tous les conteneurs d'avis
-reviews = soup.find_all('div', class_='jdgm-rev')  # Adapter la classe en fonction de votre HTML
+    data = response.json()
+    html_content = data.get('html', '')
 
-# Vérifier s'il y a des avis
-if not reviews:
-    print("Aucun avis trouvé sur la page.")
-    exit()
+    # Parse the HTML using BeautifulSoup
+    soup = BeautifulSoup(html_content, 'html.parser')
+    reviews = soup.find_all("div", class_="jdgm-rev")
 
-i=0
-# Extraire les informations de chaque avis
-for review in reviews:
-    i=i+1
-    print (i)
-    # Nom de l'auteur
-    author = review.find('span', class_='jdgm-rev__author')
-    author = author.text.strip() if author else "NA"
+    if not reviews:
+        print("No more reviews to fetch.")
+        break
 
-    # Date de l'avis
-    date = review.find('span', class_='jdgm-rev__timestamp')
-    date = date['data-content'] if date else "NA"
+    for review in reviews:
+        # Extract reviewer name
+        author = review.find("span", class_="jdgm-rev__author")
+        author = author.text.strip() if author else "N/A"
 
-    # Note (score)
-    rating = review.find('span', class_='jdgm-rev__rating')
-    rating = rating['data-score'] if rating else "NA"
+        # Extract rating
+        rating = review.find("span", class_="jdgm-rev__rating")
+        rating = rating['data-score'] if rating else "N/A"
 
-    # Titre de l'avis
-    title = review.find('b', class_='jdgm-rev__title')
-    title = title.text.strip() if title else "NA"
+        # Extract review date
+        date = review.find("span", class_="jdgm-rev__timestamp")
+        date = date['data-content'] if date else "N/A"
 
-    # Contenu de l'avis
-    content = review.find('div', class_='jdgm-rev__body')
-    content = content.text.strip() if content else "NA"
+        # Extract review text
+        content = review.find("div", class_="jdgm-rev__body")
+        content = content.text.strip() if content else "N/A"
 
-    # Lien vers le produit
-    product_link_tag = review.find('a', class_='jdgm-rev__prod-link')
-    product_link = product_link_tag['href'] if product_link_tag else "NA"
+        # Extract product title
+        title = review.find("b", class_="jdgm-rev__title")
+        title = title.text.strip() if title else "N/A"
 
-    # Afficher les résultats
-    print(f"Auteur : {author}")
-    print(f"Date : {date}")
-    print(f"Note : {rating} étoiles")
-    print(f"Titre : {title}")
-    print(f"Contenu : {content}")
-    print(f"Lien du produit : {product_link}")
-    print("-" * 50)
+        # Extract product link
+        product_link = review.find("a", class_="jdgm-rev__prod-link")
+        product_link = product_link['href'] if product_link else "N/A"
+
+        # Add review details to the list
+        total_reviews.append({
+            "author": author,
+            "rating": rating,
+            "date": date,
+            "content": content,
+            "title": title,
+            "product_link": product_link,
+        })
+
+    # Move to the next page
+    params["page"] += 1
+
+# Print the total reviews fetched
+print(f"Total reviews fetched: {len(total_reviews)}")
+for review in total_reviews:
+    print(review)
+
+# Save to a CSV file
+csv_file = "reviews.csv"
+with open(csv_file, mode="w", encoding="utf-8", newline="") as file:
+    writer = csv.DictWriter(file, fieldnames=["author", "rating", "date", "content", "title", "product_link"])
+    writer.writeheader()
+    writer.writerows(total_reviews)
+
+print(f"Reviews saved to {csv_file}")
+
+# Save to an Excel file
+excel_file = "reviews.xlsx"
+df = pd.DataFrame(total_reviews)
+df.to_excel(excel_file, index=False)
+
+print(f"Reviews also saved to {excel_file}")
