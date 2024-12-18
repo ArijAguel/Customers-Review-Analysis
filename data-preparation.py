@@ -42,3 +42,10 @@ print(data.head())
 data.to_csv('cleaned_reviews.csv', index=False, encoding='utf-8')
 print("Les données nettoyées ont été exportées dans 'cleaned_reviews.csv'")
 
+# Save to an Excel file
+excel_file = "cleaned_reviews.xlsx"
+data = pd.DataFrame(data)
+data.to_excel(excel_file, index=False)
+
+print(f"Reviews also saved to {excel_file}")
+
