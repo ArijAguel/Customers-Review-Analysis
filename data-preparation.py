@@ -5,7 +5,6 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
 
-
 # Charger les données
 data = pd.read_csv('reviews.csv')  # Ou  pd.read_excel('reviews.xlsx)
 print(data.head())
@@ -48,4 +47,3 @@ data = pd.DataFrame(data)
 data.to_excel(excel_file, index=False)
 
 print(f"Reviews also saved to {excel_file}")
-
