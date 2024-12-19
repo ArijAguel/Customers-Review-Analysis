@@ -26,7 +26,7 @@ while True:
 
     data = response.json()
     html_content = data.get('html', '')
-
+    
     # Parse the HTML using BeautifulSoup
     soup = BeautifulSoup(html_content, 'html.parser')
     reviews = soup.find_all("div", class_="jdgm-rev")
