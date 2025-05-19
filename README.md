@@ -89,16 +89,16 @@ python labeling_dataset.py
 
 4. Modeling:
 
-*Logistic Regression*:
+* *Logistic Regression*:
 Open and run the logistic_regression.ipynb notebook.
-*BERT Model*:
+* *BERT Model*:
 Open and run the bert.ipynb notebook.
 
 
 
 ## Results
 
-*Logistic Regression*: Provides a baseline for sentiment classification with interpretable coefficients.
-*BERT Model*: Leverages transformer-based architecture for improved accuracy in sentiment analysis.
+* *Logistic Regression*: Provides a baseline for sentiment classification with interpretable coefficients.
+* *BERT Model*: Leverages transformer-based architecture for improved accuracy in sentiment analysis.
 
 Note: Detailed results, including accuracy scores and confusion matrices, are available within the respective notebooks.
